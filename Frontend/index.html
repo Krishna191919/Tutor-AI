@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Study AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Lora:ital@0;1&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="app-layout">
+      <!-- SIDEBAR -->
+      <aside class="sidebar">
+        <div class="sidebar-top">
+          <div class="logo">📚 Study AI</div>
+          <button class="new-chat-btn" onclick="newChat()">+ New Chat</button>
+        </div>
+        <div class="sidebar-label">Recent</div>
+        <div class="history-list" id="history-list"></div>
+      </aside>
+
+      <!-- MAIN -->
+      <main class="main" id="main">
+        <!-- CENTERED STATE (shown when no messages) -->
+        <div class="welcome-screen" id="welcomeScreen">
+          <div class="welcome-content">
+            <h1 class="welcome-title">What do you want to learn?</h1>
+            <p class="welcome-sub">
+              Ask anything — type a question or upload an image
+            </p>
+
+            <!-- Teaching Mode Selector -->
+            <div class="mode-selector">
+              <p style="font-size: 12px; color: #888; margin-bottom: 8px">
+                Pick your learning style:
+              </p>
+              <div class="mode-buttons">
+                <button
+                  class="mode-btn active"
+                  data-mode="friend"
+                  onclick="setTeachingMode('friend')"
+                >
+                  👋 Friend
+                </button>
+                <button
+                  class="mode-btn"
+                  data-mode="coding"
+                  onclick="setTeachingMode('coding')"
+                >
+                  💻 Coding
+                </button>
+                <button
+                  class="mode-btn"
+                  data-mode="theory"
+                  onclick="setTeachingMode('theory')"
+                >
+                  🔬 Theory
+                </button>
+                <button
+                  class="mode-btn"
+                  data-mode="math"
+                  onclick="setTeachingMode('math')"
+                >
+                  📐 Math
+                </button>
+                <button
+                  class="mode-btn"
+                  data-mode="exam"
+                  onclick="setTeachingMode('exam')"
+                >
+                  ✏️ Exam
+                </button>
+              </div>
+            </div>
+
+            <div class="input-box" id="inputBoxWelcome">
+              <textarea
+                id="questionWelcome"
+                rows="1"
+                placeholder="Ask a study question..."
+                oninput="autoResize(this)"
+                onkeydown="handleKey(event, 'welcome')"
+              ></textarea>
+              <div class="input-actions">
+                <label
+                  class="icon-btn"
+                  title="Upload file"
+                  for="fileInputWelcome"
+                >
+                  📎
+                  <input
+                    type="file"
+                    id="fileInputWelcome"
+                    accept=".pdf,.txt,.png,.jpg,.jpeg,.webp"
+                    multiple
+                    style="display: none"
+                    onchange="handleFileUpload(event)"
+                  />
+                </label>
+                <button class="send-btn" onclick="askAI()">↑</button>
+              </div>
+            </div>
+            <div id="imagePreviewWelcome" class="image-preview-bar hidden">
+              <img id="previewImgWelcome" alt="preview" />
+              <button onclick="clearImage()">✕</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="pdfStatus" class="pdf-status hidden"></div>
+
+        <!-- CHAT STATE (shown when messages exist) -->
+        <div class="chat-screen hidden" id="chatScreen">
+          <div class="chat-area" id="chatMessages"></div>
+          <div class="chat-input-wrap">
+            <div class="input-box" id="inputBoxChat">
+              <textarea
+                id="questionChat"
+                rows="1"
+                placeholder="Ask a follow-up..."
+                oninput="autoResize(this)"
+                onkeydown="handleKey(event, 'chat')"
+              ></textarea>
+              <div class="input-actions">
+                <label
+                  class="icon-btn"
+                  title="Upload file (max 3)"
+                  for="fileInputChat"
+                >
+                  📎
+                  <input
+                    type="file"
+                    id="fileInputChat"
+                    accept=".pdf,.txt,.png,.jpg,.jpeg,.webp"
+                    multiple
+                    style="display: none"
+                    onchange="handleFileUpload(event)"
+                  />
+                </label>
+                <button class="send-btn" onclick="askAI()">↑</button>
+              </div>
+            </div>
+            <div id="imagePreviewChat" class="image-preview-bar hidden">
+              <img id="previewImgChat" alt="preview" />
+              <button onclick="clearImage()">✕</button>
+            </div>
+            <button onclick="readAloud()" id="readBtn" class="read-btn hidden">
+              🔊 Read last answer
+            </button>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/history.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/pdf.js"></script>
+    <script src="js/app.js"></script>
+  </body>
+</html>

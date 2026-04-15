@@ -1,0 +1,9 @@
+# Secret keys - never push!
+backend/.env
+
+# Dependencies
+backend/node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db
