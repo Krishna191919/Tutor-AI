@@ -71,7 +71,7 @@ app.post("/api/ask", async (req, res) => {
           model: "llama-3.3-70b-versatile",
           messages: enhancedMessages,
           temperature: 0.5,
-          top_p: 0.9,
+          top_p: 0.7,
           max_tokens: 1500,
         }),
       },

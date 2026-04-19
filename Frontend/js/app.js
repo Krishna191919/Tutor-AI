@@ -104,11 +104,18 @@ async function askAI() {
         exam: "You are an exam prep tutor. Test their understanding with follow-ups. Point out common mistakes exam takers make. Teach exam strategies and time management. Focus on what's likely on tests. Be supportive but challenging. Help them practice, not just memorize.",
       };
 
+      // Prepare request messages for image question
+      const requestMessages = [];
+
       // Add base system prompt based on mode
       requestMessages.push({
         role: "system",
         content: modePrompts[currentTeachingMode] || modePrompts.friend,
       });
+
+      // Include the image as part of the Gemini request via callGemini
+      // callGemini(question, base64, mimeType)
+      answer = await callGemini(question || null, imageBase64, imageType);
       conversationMessages.push({ role: "assistant", content: answer });
     } else {
       conversationMessages.push({ role: "user", content: question });
