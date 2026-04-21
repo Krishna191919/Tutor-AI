@@ -1,136 +1,110 @@
-//  history.js — Save, load, render history
-
 const HISTORY_KEY = "studyAI_history";
 
-//  Save
-function saveToHistory(question, answer) {
-  const history = getHistory();
-  history.unshift({
-    id: Date.now(),
-    question: question,
-    answer: answer,
-    time: new Date().toLocaleString(),
-  });
-  // Keep max 50 items
-  if (history.length > 50) history.pop();
-  localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
-}
-
-//  Get all
+// GET
+// =======================
 function getHistory() {
   try {
-    const stored = localStorage.getItem(HISTORY_KEY);
-    return stored ? JSON.parse(stored) : [];
+    return JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
   } catch {
     return [];
   }
 }
 
-// Render in sidebar
+// SAVE (ONLY )
+// =======================
+function saveHistory(history) {
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+}
+
+// RENDER
+// =======================
 function renderHistory() {
   const history = getHistory();
   const list = document.getElementById("history-list");
+
   if (!list) return;
 
   if (history.length === 0) {
-    list.innerHTML = '<p class="no-history">No history yet</p>';
+    list.innerHTML = "<p>No chats yet</p>";
     return;
   }
 
   list.innerHTML = history
-    .map(
-      (item, index) => `
-    <div class="history-item" id="hist-${index}" onmouseenter="showHistoryMenu(${index})" onmouseleave="hideHistoryMenu(${index})">
-      <div class="history-content" onclick="loadHistoryItem(${index})">
-        <div class="history-question">${escapeHTML(item.question.substring(0, 38))}${item.question.length > 38 ? "…" : ""}</div>
-        <div class="history-time">${item.time}</div>
-      </div>
-      <button class="history-menu-btn hidden" id="menu-${index}" onclick="deleteHistoryItem(${index}, event)" title="Delete chat">⋯</button>
-    </div>
-  `,
-    )
+    .map((chat, i) => {
+      let firstMsg = "New Chat";
+
+      if (chat.messages && Array.isArray(chat.messages)) {
+        const msg = chat.messages.find((m) => m.role === "user");
+        if (msg) firstMsg = msg.content;
+      } else if (chat.question) {
+        // support old format
+        firstMsg = chat.question;
+      }
+
+      return `
+        <div class="history-item">
+          <div onclick="loadHistoryItem(${i})">
+            ${firstMsg.slice(0, 40)}
+          </div>
+          <button 
+            class="delete-btn"
+            onclick="deleteHistoryItem(${i}, event)"
+          >🗑</button>
+        </div>
+      `;
+    })
     .join("");
 }
 
-// Show menu on hover
-function showHistoryMenu(index) {
-  const btn = document.getElementById(`menu-${index}`);
-  if (btn) btn.classList.remove("hidden");
-}
-
-// Hide menu on leave
-function hideHistoryMenu(index) {
-  const btn = document.getElementById(`menu-${index}`);
-  if (btn) btn.classList.add("hidden");
-}
-
-// Delete individual chat
-function deleteHistoryItem(index, event) {
-  event.stopPropagation(); // Prevent loading chat when deleting
-  const history = getHistory();
-  history.splice(index, 1);
-  localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
-  renderHistory();
-}
-
-// Load item into chat
+// LOAD CHAT
+// =======================
 function loadHistoryItem(index) {
   const history = getHistory();
-  const item = history[index];
-  if (!item) return;
+  const chat = history[index];
+  if (!chat) return;
 
-  // Reset conversation with this item
-  conversationMessages = [
-    { role: "user", content: item.question },
-    { role: "assistant", content: item.answer },
-  ];
+  activeChat = {
+    id: chat.id,
+    messages: [...chat.messages],
+  };
 
-  // Switch to chat screen and render
-  switchToChatScreen();
-  const chatArea = document.getElementById("chatMessages");
-  chatArea.innerHTML = "";
-  appendMessage("user", item.question);
-  appendMessage("assistant", item.answer);
+  document.getElementById("chatMessages").innerHTML = "";
 
-  // Mark active
-  document.querySelectorAll(".history-item").forEach((el, i) => {
-    el.classList.toggle("active", i === index);
+  chat.messages.forEach((msg) => {
+    appendMessage(msg.role, msg.content);
   });
-
-  // Show read button
-  document.getElementById("readBtn").classList.remove("hidden");
 }
 
-// Clear all
-function clearHistory() {
-  if (confirm("Clear all history? This cannot be undone.")) {
-    localStorage.removeItem(HISTORY_KEY);
-    renderHistory();
-  }
-}
+// DELETE CHAT
+// =======================
+function deleteHistoryItem(index, e) {
+  e.stopPropagation();
 
-// Show menu on hover
-function showHistoryMenu(index) {
-  const btn = document.getElementById(`menu-${index}`);
-  if (btn) btn.classList.remove("hidden");
-}
-
-// Hide menu on leave
-function hideHistoryMenu(index) {
-  const btn = document.getElementById(`menu-${index}`);
-  if (btn) btn.classList.add("hidden");
-}
-
-// Delete individual chat
-function deleteHistoryItem(index, event) {
-  event.stopPropagation(); // Prevent loading chat when deleting
   const history = getHistory();
   history.splice(index, 1);
-  localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+
+  saveHistory(history);
   renderHistory();
 }
 
-//  Helper
-function escapeHTML(str) {
-  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+// =======================
+// SAVE CURRENT CHAT
+// =======================
+function saveCurrentChat() {
+  const history = getHistory();
+
+  if (!activeChat || !activeChat.messages || activeChat.messages.length === 0) {
+    return;
+  }
+
+  const existingIndex = history.findIndex((chat) => chat.id === activeChat.id);
+
+  if (existingIndex !== -1) {
+    history[existingIndex] = activeChat;
+  } else {
+    history.unshift(activeChat);
+  }
+
+  saveHistory(history); // ✅ cleaner
+  renderHistory();
 }

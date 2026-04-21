@@ -19,9 +19,19 @@ function appendMessage(role, content) {
   div.classList.add("chat-message", role);
 
   if (role === "assistant") {
-    div.innerHTML = marked.parse(content);
+    // 🛡️ SAFE CHECK (IMPORTANT)
+    if (!content || typeof content !== "string") {
+      div.innerText = "⚠️ AI returned empty response";
+    } else {
+      try {
+        div.innerHTML = marked.parse(content);
+      } catch (err) {
+        console.error("Marked error:", err);
+        div.innerText = content; // fallback
+      }
+    }
   } else {
-    div.innerText = content;
+    div.innerText = content || "";
   }
 
   chatArea.appendChild(div);
