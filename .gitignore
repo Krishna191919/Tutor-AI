@@ -1,4 +1,4 @@
-# Secret keys - never push!
+#
 backend/.env
 
 # Dependencies
